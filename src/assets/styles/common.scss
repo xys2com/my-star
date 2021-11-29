@@ -1,0 +1,31 @@
+@import "//at.alicdn.com/t/font_2922395_pbbk6gnqqad.css";
+@function px2rem($px, $base-font-size: 75px) {
+  @if (unitless($px)) {
+    @warn "Assuming #{$px} to be in pixels, attempting to convert it into pixels for you";
+    @return px2rem($px + 0px);
+  } @else if (unit($px) == em) {
+    @return $px;
+  }
+  @return ($px / $base-font-size) * 1rem;
+}
+
+@mixin flex-jus-center {
+  display: flex;
+  display: -webkit-flex;
+  justify-content: center;
+}
+@mixin flex-jus-around {
+  display: flex;
+  display: -webkit-flex;
+  justify-content: space-around;
+}
+@mixin flex-jus-between {
+  display: flex;
+  display: -webkit-flex;
+  justify-content: space-between;
+}
+@mixin flex-al-center {
+  display: flex;
+  display: -webkit-flex;
+  align-items: center;
+}
