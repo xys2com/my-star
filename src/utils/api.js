@@ -20,3 +20,6 @@ export async function musicDetail(param) {
 export async function custom(url, param) {
   return await getArrayBuffer(`${prefix}${url}`, param);
 }
+export async function customByChain(url, param) {
+  return await getArrayBuffer(`${url}`, param);
+}

@@ -4,10 +4,11 @@ function StaticStar(options) {
   var s_width = options["width"];
   var s_height = options["height"];
   var max = options["max"];
-  this.x = random(3, s_width - 3);
+  // this.x = random(3, s_width - 3);
+  this.x = random((s_width / 5) * 2, (s_width / 5) * 3);
   this.y = random(3, s_height - 3);
   this.isMobile = options["isMobile"];
-  this.r = this.isMobile ? random(8, 20) * 2 : random(8, 20);
+  this.r = this.isMobile ? random(8, 20) * 2 : random(14, 30);
   this.alpha = parseFloat(random(2, 10) / 10); //初始透明度
   this.star = createStar(this.r); //一个canvas 对象
   this.rd = random(1, max);
@@ -59,12 +60,12 @@ MoveStar.prototype.draw = function (ctx) {
   // 根据角度计算x，y的位置
   var x = Math.sin(this.timePassed) * this.orbitRadius + this.orbitX, // 计算下一帧的x位置
     y = Math.cos(this.timePassed) * this.orbitRadius + this.orbitY; // 计算下一帧的y位置
-  // 视图外的星星不作渲染 （10 是一个容错值）
+  // 视图外的星星不作渲染 （50 是一个容错值）
   if (
-    x > this.renderLimitX + 10 ||
-    x < -10 ||
-    y > this.renderLimitY + 10 ||
-    y < -10
+    x > this.renderLimitX + 50 ||
+    x < -50 ||
+    y > this.renderLimitY + 50 ||
+    y < -50
   ) {
     this.timePassed -= this.speed; // 重设角度
     return;

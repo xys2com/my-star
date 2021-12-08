@@ -4,8 +4,34 @@
     ref="player"
     :style="`top:${playerConfig.top}px;left:${playerConfig.left}px`"
   >
-    <div class="box-main">
+    <div :class="`box-main ${hidden ? '' : 'show'}`">
       <div class="poster-atlas">
+        <div class="cover-blocks" v-if="!isMobile && overturn !== 0">
+          <el-tooltip
+            class="item"
+            effect="dark"
+            content="双击隐藏"
+            placement="top"
+          >
+            <div class="top" @dblclick="hidMain"></div>
+          </el-tooltip>
+          <el-tooltip
+            class="item"
+            effect="dark"
+            content="双击隐藏"
+            placement="right"
+          >
+            <div class="right" @dblclick="hidMain"></div>
+          </el-tooltip>
+          <el-tooltip
+            class="item"
+            effect="dark"
+            content="双击隐藏"
+            placement="left"
+          >
+            <div class="left" @dblclick="hidMain"></div>
+          </el-tooltip>
+        </div>
         <div
           title="按住拖动"
           :class="['drag', draging ? 'draging' : '']"
@@ -16,16 +42,9 @@
         >
           <span class="iconfont icon-yidong_huaban"></span>
         </div>
-        <el-tooltip
-          class="item"
-          effect="dark"
-          content="点击切换"
-          placement="right"
-        >
-          <div class="toggle-show" @click.stop="toggleShow">
-            <span class="iconfont icon-qiehuan"></span>
-          </div>
-        </el-tooltip>
+        <div title="点击切换" class="toggle-show" @click.stop="toggleShow">
+          <span class="iconfont icon-qiehuan"></span>
+        </div>
         <div
           :class="['poster-img', overturn === 0 ? 'recover' : 'overturn']"
         ></div>
@@ -35,7 +54,10 @@
           :style="atlasBackgroundImage"
         ></div>
       </div>
-      <div class="operate-area-wrap">
+      <div
+        class="operate-area-wrap"
+        :style="!isMobile ? 'background: #eef3f7;' : ''"
+      >
         <div class="operate-area">
           <div class="sm-btn-volume">
             <div class="small-btns">
@@ -96,6 +118,12 @@
         </div>
       </div>
     </div>
+    <div class="hidden-play">
+      <span
+        @click="hidden = false"
+        :class="['iconfont', 'icon-music', hidden ? 'show' : '']"
+      ></span>
+    </div>
   </div>
 </template>
 <script>
@@ -127,6 +155,7 @@ export default {
   },
   data() {
     return {
+      hidden: false,
       // 是否处于拖动状态
       draging: false,
       //
@@ -200,6 +229,9 @@ export default {
     };
   },
   methods: {
+    hidMain() {
+      this.hidden = true;
+    },
     // 暂停启动
     alterStatus() {
       if (this.mloading) {
@@ -261,8 +293,8 @@ export default {
       if (this.playerConfig.left < 5) {
         this.playerConfig.left = 5;
       }
-      if (this.playerConfig.top < 5) {
-        this.playerConfig.top = 5;
+      if (this.playerConfig.top < 85) {
+        this.playerConfig.top = 85;
       }
       if (this.playerConfig.left > document.body.clientWidth - 325) {
         this.playerConfig.left = document.body.clientWidth - 325;
@@ -270,20 +302,20 @@ export default {
       if (this.playerConfig.top > document.body.clientHeight - 405) {
         this.playerConfig.top = document.body.clientHeight - 405;
       }
-      if (this.timer) {
-        window.clearTimeout(this.timer);
-        this.timer = null;
-      }
-      this.timer = window.setTimeout(() => {
-        this.setAtlasBackground(
-          this.playerConfig.left + 20,
-          this.playerConfig.top + 20,
-          this.playerConfig.left + 300,
-          this.playerConfig.top + 200
-        );
-        window.clearTimeout(this.timer);
-        this.timer = null;
-      }, 5);
+      // if (this.timer) {
+      //   window.clearTimeout(this.timer);
+      //   this.timer = null;
+      // }
+      // this.timer = window.setTimeout(() => {
+      //   this.setAtlasBackground(
+      //     this.playerConfig.left + 20,
+      //     this.playerConfig.top + 20,
+      //     this.playerConfig.left + 300,
+      //     this.playerConfig.top + 200
+      //   );
+      //   window.clearTimeout(this.timer);
+      //   this.timer = null;
+      // }, 5);
     },
     // 每20s更新一次背景颜色数据
     updateBackgroundBase64() {
@@ -530,6 +562,7 @@ export default {
         const params = [this.visualObj];
         const option = {
           id: this.anmId,
+          name: "music-view",
           fun,
           params,
         };
@@ -550,7 +583,7 @@ export default {
       if (this.isMobile) {
         this.overturn++;
         if (this.overturn > 2) {
-          this.overturn = 1;
+          this.overturn = 0;
         }
         this.setAnm();
         return;
@@ -563,11 +596,8 @@ export default {
     },
     // 初始化播放器位置
     initPlayer() {
-      let sc_w = document.body.clientWidth;
-      let sc_h = document.body.clientHeight;
-      // 计算拖动按钮的中心位置
-      let posX = (sc_w - this.playerConfig.width) / 2 + 300,
-        posY = (sc_h - this.playerConfig.height) / 2 + 15;
+      let posX = 300,
+        posY = 15;
       this.setPlayerPos({ x: posX, y: posY }, true);
     },
   },
@@ -576,15 +606,20 @@ export default {
     this.VCanvasDom = document.createElement("canvas");
     this.VCanvasDom.width = document.body.clientWidth;
     this.VCanvasDom.height = document.body.clientHeight;
+    const _pre = document.body.onresize;
     document.body.onresize = () => {
       this.VCanvasDom.width = document.body.clientWidth;
       this.VCanvasDom.height = document.body.clientHeight;
+      _pre();
     };
     this.initPlayer();
     // 更新背景
     // this.updateBackgroundBase64();
     // 注册事件
     document.body.onmouseleave = () => {
+      this.dragend();
+    };
+    document.body.onmouseup = () => {
       this.dragend();
     };
     // 注册canvas原型方法
@@ -607,6 +642,7 @@ export default {
   destroyed() {
     document.body.onresize = null;
     document.body.onmouseleave = null;
+    document.body.onmouseup = null;
     window.clearInterval(this.setMusicPgsTimer);
     window.clearTimeout(this.canvasDataUpdateTimer);
     this.dragend();
@@ -617,6 +653,7 @@ export default {
 @import "styles/common.scss";
 .square-player {
   position: absolute;
+  z-index: 999;
   &.in-mobile {
     position: relative;
     height: 100%;
@@ -628,7 +665,7 @@ export default {
       border-radius: 0;
       padding: px2rem(20px);
       background: unset;
-      display: flex;
+      display: flex !important;
       flex-direction: column;
       justify-content: flex-end;
       .poster-atlas {
@@ -662,63 +699,64 @@ export default {
           height: calc(100% - px2rem(5px));
         }
       }
-
-      .operate-area {
-        margin-top: px2rem(10px);
-        .sm-btn-volume {
-          .small-btns {
-            height: px2rem(48px);
-            .btn {
-              width: px2rem(48px);
+      .operate-area-wrap {
+        .operate-area {
+          margin-top: px2rem(10px);
+          .sm-btn-volume {
+            .small-btns {
               height: px2rem(48px);
-              // border-radius: px2rem(24px);
-              border-radius: px2rem(24px);
-              border: px2rem(3px) solid #3eb2ff;
-              background: unset;
-              span {
-                font-size: px2rem(32px);
-                color: #3eb2ff;
+              .btn {
+                width: px2rem(48px);
+                height: px2rem(48px);
+                // border-radius: px2rem(24px);
+                border-radius: px2rem(24px);
+                border: px2rem(3px) solid #3eb2ff;
+                background: unset;
+                span {
+                  font-size: px2rem(32px);
+                  color: #3eb2ff;
+                }
+                &::before {
+                  display: none;
+                }
+                &:hover {
+                  span {
+                    color: #fff;
+                  }
+                }
               }
-              &::before {
-                display: none;
+            }
+            .volume-bar {
+              height: px2rem(24px);
+              span {
+                color: #3eb2ff;
+                font-size: px2rem(20px);
+              }
+              .bar-line {
+                background: #3eb2ff33;
+                width: px2rem(150px);
+                .bar-line-inner {
+                  background: #3eb2ff;
+                }
+              }
+            }
+          }
+          .big-btns {
+            height: px2rem(72px);
+            .btn {
+              color: #3eb2ff;
+              width: px2rem(60px);
+              height: px2rem(60px);
+              border-radius: px2rem(30px);
+              border: px2rem(4px) solid #3eb2ff;
+              span {
+                color: #3eb2ff;
+                font-size: px2rem(48px);
               }
               &:hover {
                 span {
                   color: #fff;
                 }
-              }
-            }
-          }
-          .volume-bar {
-            height: px2rem(24px);
-            span {
-              color: #3eb2ff;
-              font-size: px2rem(20px);
-            }
-            .bar-line {
-              background: #3eb2ff33;
-              width: px2rem(150px);
-              .bar-line-inner {
-                background: #3eb2ff;
-              }
-            }
-          }
-        }
-        .big-btns {
-          height: px2rem(72px);
-          .btn {
-            color: #3eb2ff;
-            width: px2rem(60px);
-            height: px2rem(60px);
-            border-radius: px2rem(30px);
-            border: px2rem(4px) solid #3eb2ff;
-            span {
-              color: #3eb2ff;
-              font-size: px2rem(48px);
-            }
-            &:hover {
-              span {
-                color: #fff;
               }
             }
           }
@@ -783,27 +821,89 @@ export default {
     }
   }
   .box-main {
-    height: 400px;
+    height: 380px;
     width: 320px;
     box-shadow: 0px 15px 35px -5px rgba(50, 88, 130, 0.32);
-    background: #eef3f7;
-    border-radius: 15px;
-    padding: 20px;
+    display: none;
+    opacity: 0;
+    // background: #eef3f7;
+    // padding: 20px;
     // opacity: 0.9;
     // transition: opacity 0.3s;
     // &:hover {
     //   opacity: 1;
     // }
+    @keyframes boxshow {
+      20% {
+        opacity: 0;
+        transform: scale(0.2);
+      }
+      80% {
+        opacity: 0.8;
+        transform: scale(1.1);
+      }
+      90% {
+        opacity: 0.9;
+        transform: scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    &.show {
+      display: block;
+      animation: boxshow 0.8s forwards;
+    }
     .poster-atlas {
       position: relative;
       border-radius: 15px;
-      margin-top: -75px;
-      height: 250px;
-      width: 100%;
+      height: 180px;
+      padding: 15px 20px;
+      border-radius: 15px;
+      width: 320px;
       z-index: 0;
+      .cover-blocks {
+        border-radius: 15px 15px 0 0;
+        overflow: hidden;
+        width: 320px;
+        height: 180px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        div {
+          background: #eef3f7;
+          position: absolute;
+          &.top {
+            width: 100%;
+            height: 15px;
+            top: 0;
+            left: 0;
+          }
+          &.left {
+            height: 100%;
+            width: 20px;
+            top: 0;
+            left: 0;
+          }
+          &.right {
+            height: 100%;
+            width: 20px;
+            top: 0;
+            right: 0;
+          }
+          &.bottom {
+            width: 100%;
+            height: 15px;
+            bottom: 0;
+            left: 0;
+          }
+        }
+      }
       .drag {
         position: absolute;
-        right: -15px;
+        right: 5px;
+        top: 0px;
         bottom: 165px;
         width: 30px;
         height: 30px;
@@ -833,7 +933,7 @@ export default {
       }
       .toggle-show {
         position: absolute;
-        right: -15px;
+        right: 5px;
         bottom: 75px;
         width: 30px;
         height: 30px;
@@ -914,9 +1014,13 @@ export default {
         position: absolute;
         bottom: 0;
         left: 0;
+        overflow: hidden;
+        //padding: 0 20px;
+        //padding-top: 15px;
         border-radius: 5px;
-        height: calc(100% - 70px);
-        width: 100%;
+        height: calc(100% - 15px);
+        left: 20px;
+        width: calc(100% - 40px);
         transition: transform ease-in 0.3s;
         &.overturn {
           // transform: rotateY(180deg);
@@ -952,107 +1056,111 @@ export default {
         }
       }
     }
+    .operate-area-wrap {
+      padding: 15px;
 
-    .operate-area {
-      margin-top: 10px;
-      @include flex-jus-between;
-      align-items: flex-start;
-      .sm-btn-volume {
-        width: 70%;
-        .small-btns {
-          @include flex-jus-around;
+      padding-top: 10px;
+      border-radius: 0 0 15px 15px;
+      .operate-area {
+        @include flex-jus-between;
+        align-items: flex-start;
+        .sm-btn-volume {
+          width: 70%;
+          .small-btns {
+            @include flex-jus-around;
+            @include flex-al-center;
+            height: 48px;
+            cursor: pointer;
+            .btn {
+              @include flex-al-center;
+              @include flex-jus-center;
+              transition: all 0.5s;
+              width: 48px;
+              height: 48px;
+              border-radius: 24px;
+              position: relative;
+              transition: all 0.4s;
+              span {
+                z-index: 10;
+                color: #acb8cc;
+                font-size: 32px;
+                transition: color 0.3s;
+              }
+              &:hover {
+                &::before {
+                  opacity: 1;
+                  transform: scale(1);
+                }
+                span {
+                  color: #532ab9;
+                }
+              }
+              &::before {
+                content: "";
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                border-radius: 24px;
+                background: #fff;
+                z-index: 0;
+                box-shadow: 0px 5px 10px 0px rgba(76, 70, 124, 0.2);
+                transform: scale(0.9);
+                transition: transform 0.15s;
+              }
+            }
+          }
+          .volume-bar {
+            width: 100%;
+            height: 24px;
+            padding: 0 5%;
+            @include flex-al-center;
+            span {
+              color: #acb8cc;
+              font-weight: bold;
+              cursor: pointer;
+              font-size: 20px;
+            }
+            .bar-line {
+              width: 150px;
+              height: 5px;
+              border-radius: 2.5px;
+              background: #d0d8e6;
+              cursor: pointer;
+              margin-left: 5%;
+              .bar-line-inner {
+                border-radius: 2.5px;
+                background: #a3b3ce;
+                height: 100%;
+                transition: width 0.5s;
+              }
+            }
+          }
+        }
+        .big-btns {
+          flex: 1;
+          height: 72px;
+          @include flex-jus-center;
           @include flex-al-center;
-          height: 48px;
           cursor: pointer;
           .btn {
-            @include flex-al-center;
-            @include flex-jus-center;
+            color: #fff;
+            width: 60px;
+            height: 60px;
+            border: 6px solid #fff;
             transition: all 0.5s;
-            width: 48px;
-            height: 48px;
-            border-radius: 24px;
-            position: relative;
-            transition: all 0.4s;
+            filter: drop-shadow(0 11px 6px rgba(172, 184, 204, 0.45));
+            @include flex-jus-center;
+            @include flex-al-center;
+            border-radius: 30px;
             span {
-              z-index: 10;
-              color: #acb8cc;
-              font-size: 32px;
+              font-size: 48px;
+              color: #fff;
               transition: color 0.3s;
             }
             &:hover {
-              &::before {
-                opacity: 1;
-                transform: scale(1);
-              }
               span {
                 color: #532ab9;
               }
-            }
-            &::before {
-              content: "";
-              position: absolute;
-              width: 100%;
-              height: 100%;
-              border-radius: 24px;
-              background: #fff;
-              z-index: 0;
-              box-shadow: 0px 5px 10px 0px rgba(76, 70, 124, 0.2);
-              transform: scale(0.9);
-              transition: transform 0.15s;
-            }
-          }
-        }
-        .volume-bar {
-          width: 100%;
-          height: 24px;
-          padding: 0 5%;
-          @include flex-al-center;
-          span {
-            color: #acb8cc;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 20px;
-          }
-          .bar-line {
-            width: 150px;
-            height: 5px;
-            border-radius: 2.5px;
-            background: #d0d8e6;
-            cursor: pointer;
-            margin-left: 5%;
-            .bar-line-inner {
-              border-radius: 2.5px;
-              background: #a3b3ce;
-              height: 100%;
-              transition: width 0.5s;
-            }
-          }
-        }
-      }
-      .big-btns {
-        flex: 1;
-        height: 72px;
-        @include flex-jus-center;
-        @include flex-al-center;
-        cursor: pointer;
-        .btn {
-          color: #fff;
-          width: 60px;
-          height: 60px;
-          border: 6px solid #fff;
-          transition: all 0.5s;
-          filter: drop-shadow(0 11px 6px rgba(172, 184, 204, 0.45));
-          @include flex-jus-center;
-          @include flex-al-center;
-          border-radius: 30px;
-          span {
-            font-size: 48px;
-            color: #fff;
-            transition: color 0.3s;
-          }
-          &:hover {
-            span {
-              color: #532ab9;
             }
           }
         }
@@ -1139,6 +1247,37 @@ export default {
           font-size: 16px;
           opacity: 0.7;
           text-align: left;
+        }
+      }
+    }
+  }
+  @mixin lightFontBlue($color) {
+    color: $color;
+    text-shadow: 0px 0px 10px #426ab3, 0px 0px 10px #426ab3,
+      0px 0px 10px #426ab3, 0px 0px 10px #426ab3;
+  }
+  .hidden-play {
+    span {
+      position: fixed;
+      font-size: 60px;
+      @include lightFontBlue(rgb(0, 201, 252));
+      cursor: pointer;
+      top: 140px;
+      left: -65px;
+      &.show {
+        animation: show 0.75s forwards;
+      }
+      @keyframes show {
+        80% {
+          left: 55px;
+          transform: skew(-10deg, 0deg);
+        }
+        90% {
+          left: 47.5px;
+          transform: skew(5deg, 0deg);
+        }
+        100% {
+          left: 50px;
         }
       }
     }

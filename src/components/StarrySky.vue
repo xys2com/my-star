@@ -1,14 +1,20 @@
 <template>
-  <div class="starry-sky canvas-wrap">
+  <div
+    class="starry-sky canvas-wrap"
+    ref="canvas-wrap"
+    @mousemove="setOffset"
+    :style="`transform: rotateX(${cvsOffsetConfig.ofsY}deg) rotateY(${cvsOffsetConfig.ofsX}deg);`"
+  >
     <canvas name="sta" ref="sta" onwave="1" />
     <canvas name="mov" ref="mov" />
     <canvas name="met" ref="met" />
     <canvas name="moo" ref="moo" onwave="1" />
-    <canvas name="wave" ref="wave" />
+    <canvas name="wave" ref="wave" v-if="!isMobile" />
   </div>
 </template>
 <script>
 import { mobileTypeJudge } from "@/utils/tool";
+import { CreateWave } from "@/utils/wave";
 import { StaticStar, MoveStar, SmallMeteor } from "@/utils/star-view-anm";
 export default {
   data() {
@@ -16,7 +22,7 @@ export default {
       // 动态星星数量
       moverStarNum: 600,
       // 静态星星数量
-      stticStarNum: 20,
+      stticStarNum: 15,
       // 流星数量
       meteorNum: 30,
       staticStars: [],
@@ -30,6 +36,16 @@ export default {
       limitX: 1920,
       limitY: 1080,
       isMobile: false,
+      //
+      waveHeight: 0.6,
+      recoverTimeout: null,
+      mouseMoveTimer: Date.now(),
+      cvsOffsetConfig: {
+        startx: 0,
+        starty: 0,
+        ofsX: 0,
+        ofsY: 0,
+      },
     };
   },
   methods: {
@@ -41,7 +57,7 @@ export default {
         : document.body.offsetWidth;
       this.limitY = this.isMobile
         ? document.body.offsetHeight * 2
-        : document.body.offsetHeight;
+        : document.body.offsetHeight * this.waveHeight;
 
       let sta = this.$refs.sta;
       let mov = this.$refs.mov;
@@ -94,8 +110,11 @@ export default {
     },
     // 初始化动态星星
     createMoveStar(cvs, ctx) {
+      let moverStarNum = this.isMobile
+        ? this.moverStarNum
+        : this.moverStarNum * 1.5;
       this.moveStars = [];
-      for (var i = 0; i < this.moverStarNum; i++) {
+      for (var i = 0; i < moverStarNum; i++) {
         let star = new MoveStar({
           width: cvs.width,
           height: cvs.height,
@@ -115,6 +134,7 @@ export default {
       const params = [ctx, this.moveStars];
       const option = {
         fun,
+        name: "move-star",
         params,
       };
       this.$emit("add", option);
@@ -140,21 +160,21 @@ export default {
       const params = [ctx, this.meteor];
       const option = {
         fun,
+        name: "meteor",
         params,
       };
       this.$emit("add", option);
     },
     // 月亮
     async createMoon(cvs, ctx) {
-      console.log("2");
       let c = document.createElement("canvas");
       let _ctx = c.getContext("2d");
       let img = new Image();
       img.src = require("@/assets/images/moon.png"); //getImgUrl()
       let _this = this;
       img.onload = await function () {
-        c.width = 300;
-        c.height = 300;
+        c.width = _this.isMobile ? 300 : 450;
+        c.height = _this.isMobile ? 300 : 450;
         let crc_x = c.width / 2,
           crc_y = c.height / 2,
           R = c.height / 2;
@@ -177,27 +197,113 @@ export default {
 
         ctx.globalCompositeOperation = "destination-over";
         ctx.globalAlpha = 1;
-        ctx.drawImage(c, ctx.canvas.width - c.width, 0, c.width, c.height);
-        let wavecvs = _this.$refs.wave;
-        let wavectx = wavecvs.getContext("2d");
-        _this.createWave(wavecvs, wavectx);
+        if (_this.isMobile) {
+          ctx.drawImage(c, ctx.canvas.width - c.width, 0, c.width, c.height);
+        } else {
+          let x = (ctx.canvas.width - c.width) / 2,
+            y = _this.height * _this.waveHeight - (c.height / 3) * 2;
+          ctx.drawImage(c, x, y, c.width, c.height);
+        }
+        if (!_this.isMobile) {
+          let wavecvs = _this.$refs.wave;
+          let wavectx = wavecvs.getContext("2d");
+          _this.createWave(wavecvs, wavectx);
+        }
       };
-      setTimeout(() => {
-        this.$emit("updateBackground");
-      }, 500);
+      // setTimeout(() => {
+      //   this.$emit("updateBackground");
+      // }, 500);
     },
     // 水波
-    createWave(cvs, ctx) {
-      const refs = this.$refs;
-      const onwaveCanvas = [];
-      for (let key in refs) {
-        if (refs[key].getAttribute("onwave") == "1") {
-          onwaveCanvas.push(refs[key]);
-        }
+    async createWave(cvs, ctx) {
+      const fn = () => {
+        return new Promise((rs) => {
+          const refs = this.$refs;
+          const onwaveCanvas = [];
+          for (let key in refs) {
+            if (refs[key].getAttribute("onwave") == "1") {
+              onwaveCanvas.push(refs[key]);
+            }
+          }
+          cvs.height = cvs.height * this.waveHeight;
+          onwaveCanvas.forEach((e, i) => {
+            ctx.drawImage(
+              e,
+              0,
+              0,
+              cvs.width,
+              cvs.height,
+              0,
+              0,
+              cvs.width,
+              cvs.height
+            );
+            // e.parentNode.removeChild(e);
+            if (i === onwaveCanvas.length - 1) {
+              rs(true);
+            }
+          });
+        });
+      };
+      const renderImgKey = await fn();
+      if (renderImgKey) {
+        const option = await CreateWave({
+          waves: 10,
+          speed: 0.2,
+          scale: 1,
+          height: 0.5,
+          image: cvs,
+        });
+        this.createCanvas3dView();
+        this.$emit("add", option);
       }
-      onwaveCanvas.forEach((e) => {
-        ctx.drawImage(e, 0, 0, cvs.width, cvs.height);
+    },
+    createCanvas3dView() {
+      const canvases = Array.from(this.$refs["canvas-wrap"].children);
+      canvases.forEach((e, i) => {
+        let num = canvases.length - i;
+        if (i === canvases.length - 1) {
+          num = canvases.length - (i - 1);
+        }
+        e.style.transform = `translateZ(-${
+          num * 50 + (num / 2) * 50
+        }px) scale(1.05)`;
       });
+    },
+    setOffset(e) {
+      let _now_time = Date.now();
+      if (_now_time - this.mouseMoveTimer < 150) {
+        return;
+      }
+      this.mouseMoveTimer = _now_time;
+      if (
+        this.cvsOffsetConfig.startx === 0 &&
+        this.cvsOffsetConfig.starty === 0
+      ) {
+        this.cvsOffsetConfig.startx = e.clientX;
+        this.cvsOffsetConfig.starty = e.clientY;
+        return;
+      }
+      let xdeg = (e.clientX - this.cvsOffsetConfig.startx) / 200,
+        ydeg = -(e.clientY - this.cvsOffsetConfig.starty) / 200;
+      xdeg < -4 ? -4 : xdeg;
+      xdeg > 4 ? 4 : xdeg;
+      ydeg < -4 ? -4 : ydeg;
+      ydeg > 4 ? 4 : ydeg;
+      this.cvsOffsetConfig.ofsX = xdeg;
+      this.cvsOffsetConfig.ofsY = ydeg;
+      window.clearTimeout(this.recoverTimeout);
+      this.recoverTimeout = null;
+      this.recoverTimeout = setTimeout(() => {
+        this.cvsOffsetConfig = {
+          startx: 0,
+          starty: 0,
+          ofsX: 0,
+          ofsY: 0,
+        };
+        window.clearTimeout(this.recoverTimeout);
+        this.recoverTimeout = null;
+      }, 1500);
     },
   },
   mounted() {
@@ -207,8 +313,10 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped>
+<style lang="scss">
 .canvas-wrap {
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
   canvas {
     position: absolute;
     top: 0;

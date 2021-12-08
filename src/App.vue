@@ -3,19 +3,30 @@
     id="app"
     :style="`background: linear-gradient(to bottom, ${backgroundTopColor}, ${backgroundBottomColor})`"
   >
-    <Header />
-    <router-view />
+    <Header @callBrotherEvent="childFn" />
+    <router-view ref="child" />
   </div>
 </template>
 <script>
 import Header from "@/components/Header";
 import { mapGetters } from "vuex";
 export default {
+  data() {
+    return {
+      tips: false,
+    };
+  },
   computed: {
     ...mapGetters(["backgroundTopColor", "backgroundBottomColor"]),
   },
   components: {
     Header,
+  },
+  methods: {
+    childFn(datum) {
+      const { name, params: option } = datum;
+      this.$refs.child[name] && this.$refs.child[name](option);
+    },
   },
 };
 </script>

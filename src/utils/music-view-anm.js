@@ -14,8 +14,8 @@ export function FrequencySpectrum(id) {
   this.grd.addColorStop(0, "#ff0");
   this.grd.addColorStop(1, "#0ff");
 
-  this.sx = 10;
-  this.gap = (this.canvas.width - this.sx * 2) / 128; // 线条之间的间隙
+  this.sx = 20;
+  this.gap = (this.canvas.width - this.sx * 2 - 128) / 128; // 线条之间的间隙
   this.dotArr = [];
 
   this.runIndex = 0; // 用来决定 在画布中绘制哪种动画
@@ -53,6 +53,7 @@ export function FrequencySpectrum(id) {
     this.clear();
     this.ctx.fillStyle = this.grd;
     this.ctx.strokeStyle = this.grd;
+    this.ctx.lineJoin = "round";
     this.ctx.lineWidth = 2;
     this.ctx.beginPath();
     this.ctx.moveTo(
@@ -63,7 +64,8 @@ export function FrequencySpectrum(id) {
       let h = this.canvas.height - (arr[i] / 255) * this.canvas.height * 0.8;
       let ix = this.sx + i / 2 + (i / 2) * this.gap;
       // 左右/上下 随机偏差
-      this.ctx.lineTo(ix + random(-1, 1), h + random(-1, 1));
+      this.ctx.lineTo(ix + random(-2, 2), h + random(-2, 2));
+      // this.ctx.lineTo(ix, h);
     }
     this.ctx.lineTo(
       this.canvas.width,
@@ -82,25 +84,25 @@ export function FrequencySpectrum(id) {
     this.clear();
     this.ctx.save();
     this.ctx.globalCompositeOperation = "lighter";
-    for (let i = 0; i < this.dotArr.length; i++) {
-      const item = this.dotArr[i];
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    for (let i = 0; i < 256; i += 8) {
+      const item = this.dotArr[i / 8];
       const rate = Number((arr[i] / 255).toFixed(2));
       const R = item.r * (rate < 0.5 ? 0.5 : rate);
       const img = getDotCanvas(item, R);
       this.ctx.globalAlpha = 1;
       this.ctx.drawImage(img, item.x - R, item.y - R);
-      if (item.x >= 280 || item.x <= -R) {
+      if (item.x >= this.canvas.width || item.x <= -R) {
         item.xd = item.xd * -1;
         item.xv = (random(2, 5) / 10).toFixed(1); // 变换速度
       }
-      if (item.y >= 180 || item.y <= -R) {
+      if (item.y >= this.canvas.height || item.y <= -R) {
         item.yd = item.yd * -1;
         item.yv = (random(2, 5) / 10).toFixed(1); // 变换速度
       }
       item.x += item.xd * item.xv;
       item.y += item.yd * item.yv;
     }
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.restore();
   };
   // 返回一个canvas
@@ -128,16 +130,16 @@ export function FrequencySpectrum(id) {
   };
   // 初始化圆点
   const dotInit = () => {
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 32; i++) {
       const d = {
-        x: random(0, 280),
-        y: random(0, 180),
+        x: random(0, this.canvas.width),
+        y: random(0, this.canvas.height),
         c: random(0, 360), // 颜色
         xd: random(0, 100) % 2 === 0 ? 1 : -1, // 1横向正方向 -1反方向
         yd: random(0, 100) % 2 === 0 ? 1 : -1, // 1竖向正方向 -1反方向
         xv: (random(2, 5) / 10).toFixed(1), // 速度
         yv: (random(2, 5) / 10).toFixed(1), // 速度
-        r: 40, // 半径
+        r: 100, // 半径
       };
       this.dotArr.push(d);
     }

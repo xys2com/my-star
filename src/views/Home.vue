@@ -34,6 +34,8 @@ export default {
       allAnmFnOptions: [],
       img: null,
       isMobile: false,
+      // 限帧timer
+      timer: Date.now(),
     };
   },
   watch: {
@@ -71,7 +73,7 @@ export default {
     // 删除动画
     removeAnm(id) {
       const index = this.allAnmFnOptions.findIndex((e) => {
-        return (e.id = id);
+        return e.id === id;
       });
       if (index !== -1) {
         this.allAnmFnOptions.splice(index, 1);
@@ -84,6 +86,7 @@ export default {
         this.anm = null;
         return;
       }
+
       this.allAnmFnOptions.forEach((e) => {
         if (e.params) {
           e.fun(...e.params);
@@ -100,21 +103,21 @@ export default {
     },
     //
     updateBackground() {
-      const player = this.$refs.player;
-      player && player.updateBackgroundBase64();
+      // const player = this.$refs.player;
+      // player && player.updateBackgroundBase64();
     },
   },
   mounted() {
     window.anmStop = this.stop;
     // 是否移动端
     this.isMobile = mobileTypeJudge().isMobile;
-    if (this.isMobile) {
-      // 移动端只做临时兼容处理，更佳效果请移步pc端
-      this.$message({
-        message: "更佳效果请移步pc端",
-        duration: 3000,
-      });
-    }
+    // if (this.isMobile) {
+    //   // 移动端只做临时兼容处理，更佳效果请移步pc端
+    //   this.$message({
+    //     message: "更佳效果请移步pc端",
+    //     duration: 3000,
+    //   });
+    // }
   },
 };
 </script>
@@ -132,7 +135,9 @@ export default {
     left: 0;
     height: 100%;
     width: 100%;
-    background: linear-gradient(rgb(4, 4, 38), rgb(70, 76, 134));
+    // background: linear-gradient(rgb(4, 4, 38), rgb(70, 76, 134));
+
+    background: linear-gradient(to bottom, #040426, #173185);
   }
 }
 </style>
