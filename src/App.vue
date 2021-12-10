@@ -3,7 +3,7 @@
     id="app"
     :style="`background: linear-gradient(to bottom, ${backgroundTopColor}, ${backgroundBottomColor})`"
   >
-    <Header @callBrotherEvent="childFn" />
+    <Header @callBrotherEvent="childFn" v-if="!isOther" />
     <router-view ref="child" />
   </div>
 </template>
@@ -18,6 +18,9 @@ export default {
   },
   computed: {
     ...mapGetters(["backgroundTopColor", "backgroundBottomColor"]),
+    isOther() {
+      return this.$route.fullPath === "/menus";
+    },
   },
   components: {
     Header,
