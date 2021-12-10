@@ -276,7 +276,7 @@ export function Firefly(
     let dir = random(0, 1) ? true : false;
     while (nowy < limitY) {
       // 有一定几率打个转
-      let spin = random(1, 100) < 60 ? true : false;
+      let spin = random(1, 100) < 35 ? true : false;
       let p = [];
       // 第一个点
       if (!start) {

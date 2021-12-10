@@ -8,9 +8,27 @@ if (process.env.NODE_ENV === "development") {
 } else if (process.env.NODE_ENV === "production") {
   axios.defaults.baseURL = "";
 }
-axios.defaults.timeout = 10000;
+axios.defaults.timeout = 30000;
 axios.defaults.headers.post["Content-Type"] =
   "application/x-www-form-urlencoded;charset=UTF-8;multipart/form-data";
+// 对请求拦截
+axios.interceptors.request.use(
+  function (config) {
+    return config;
+  },
+  function (error) {
+    return Promise.reject({ status: 633, message: error });
+  }
+);
+// 对返回拦截
+axios.interceptors.response.use(
+  function (response) {
+    return response;
+  },
+  function (error) {
+    return Promise.resolve({ status: 633, message: error.response });
+  }
+);
 
 /**
  * get方法，对应get请求

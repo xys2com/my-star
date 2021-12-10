@@ -40,12 +40,16 @@
     <div class="header-mobile" v-else>
       <div :class="`m-head ${touch ? 'touch' : ''}`">
         <img
-          src="../assets/images/head.png"
+          src="https://music-960422.oss-cn-beijing.aliyuncs.com/dev/head.png"
           alt=""
-          @touchstart="touch = true"
+          @click="touch = true"
         />
       </div>
-      <div :class="['m-nav', touch ? 'active' : '']">
+      <div
+        :class="['m-nav', touch ? 'active' : '']"
+        @touchstart="navTouchStart"
+        @touchmove="navTouchMove"
+      >
         <div class="m-nav-main">
           <canvas class="m-header-canvas" ref="m-header-canvas"></canvas>
           <div class="m-nav-list">
@@ -62,30 +66,35 @@
           </div>
           <div class="m-container">
             <div class="m-imglist">
-              <el-tooltip
+              <div class="diary-title">我的日记</div>
+              <div
+                class="m-img-box"
                 v-for="(item, i) in imgList"
                 :key="i"
-                class="item"
-                effect="dark"
-                :content="item.text"
-                placement="bottom"
+                @click="imgView(i)"
               >
-                <div class="m-img-box">
-                  <el-image :src="item.src" :preview-src-list="srcList">
-                  </el-image>
-                </div>
-              </el-tooltip>
-            </div>
-            <div class="m-diary" v-if="checkItem && isMobile">
-              <div class="m-note" v-html="checkItem.note"></div>
-              <div class="m-subtitle" v-html="checkItem.subtitle"></div>
-              <div class="m-other">
-                <span class="iconfont icon-github" @click="openGithub"></span>
+                <img :src="item.src" />
               </div>
+            </div>
+            <div class="m-diary">
+              <canvas class="m-diary-canvas" ref="m-diary-canvas"></canvas>
+              <div
+                class="m-note"
+                v-if="checkItem && isMobile"
+                v-html="checkItem.note"
+              ></div>
+              <div
+                class="m-subtitle"
+                v-if="checkItem && isMobile"
+                v-html="checkItem.subtitle"
+              ></div>
+              <div class="m-other"></div>
             </div>
           </div>
         </div>
-        <div class="m-nav-blank" @touchstart="touch = false"></div>
+        <div class="m-nav-blank" @click="touch = false">
+          <span class="iconfont icon-github" @click.stop="openGithub"></span>
+        </div>
       </div>
     </div>
     <div v-if="isMobile" class="mobile-tips">点左边头像试试</div>
@@ -94,7 +103,10 @@
 <script>
 import { mobileTypeJudge } from "@/utils/tool";
 import { Firefly } from "@/utils/firefly";
+import { Ripple } from "@/utils/ripple";
 import { random } from "@/utils/tool";
+
+import { ImagePreview } from "vant";
 export default {
   name: "App",
   data() {
@@ -133,6 +145,7 @@ export default {
       backLightLeft: 0,
       checkItem: null,
       fireflylist: [],
+      ripples: [],
       anmId: Math.random().toString(32).slice(-8),
       imgshow: false,
       creating: false,
@@ -140,26 +153,32 @@ export default {
       limitY: 1080,
       imgList: [
         {
-          src: require("../assets/images/diary/hl.jpg"),
+          src: "https://music-960422.oss-cn-beijing.aliyuncs.com/diary/hl.jpg",
           text: "鲁迅体周五下班日记",
         },
         {
-          src: require("../assets/images/diary/sd.jpg"),
+          src: "https://music-960422.oss-cn-beijing.aliyuncs.com/diary/sd.jpg",
           text: "悟一悟",
         },
         {
-          src: require("../assets/images/diary/xwzy.jpg"),
+          src: "https://music-960422.oss-cn-beijing.aliyuncs.com/diary/xwzy.jpg",
           text: "虚无主义，从来都不是让人颓废的。",
         },
         {
-          src: require("../assets/images/diary/ml.jpg"),
+          src: "https://music-960422.oss-cn-beijing.aliyuncs.com/diary/ml.jpg",
           text: "听会歌",
         },
         {
-          src: require("../assets/images/diary/sj.jpg"),
+          src: "https://music-960422.oss-cn-beijing.aliyuncs.com/diary/sj.jpg",
           text: "未来既定，把握当下",
         },
       ],
+      headerCanvas: null,
+      diaryCanvas: null,
+      navTouch: {
+        x: 0,
+        y: 0,
+      },
     };
   },
   computed: {
@@ -173,6 +192,17 @@ export default {
         this.setBackPosition(i);
       },
     },
+    // touch: {
+    //   handler(v) {
+    //     if (v && this.isMobile) {
+    //       this.$notify({
+    //         title: "提示来了~",
+    //         message: "图片查看有点粗糙，勉强看看，以后再改~",
+    //         duration: 1500,
+    //       });
+    //     }
+    //   },
+    // },
   },
   methods: {
     navclick(e, item, i) {
@@ -286,16 +316,70 @@ export default {
       };
       this.$emit("callBrotherEvent", { name: "addAnm", params: option });
     },
+    // 随机创建涟漪
+    createRipple() {
+      const ctx = this.diaryCanvas.getContext("2d");
+      const fun = (ripples, ctx) => {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        let has = this.active === 1 ? random(1, 200) < 6 : random(1, 200) < 3;
+        if (has) {
+          let num = random(2, 4);
+          let x = random(0, this.diaryCanvas.width);
+          let y = random(0, this.diaryCanvas.height);
+          for (let i = 0; i < num; i++) {
+            let delay = random(20, 30);
+            let rip = new Ripple(x, y, this.diaryCanvas.height, i * delay);
+            ripples.push(rip);
+          }
+        }
+        ripples.forEach((e, i) => {
+          e.draw(ctx);
+          if (e.die) {
+            ripples.splice(i, 1);
+          }
+        });
+      };
+      let params = [this.ripples, ctx];
+      let option = {
+        name: "ripple",
+        fun,
+        params,
+      };
+      this.$emit("callBrotherEvent", { name: "addAnm", params: option });
+    },
     // 打开日记本
     openDiary() {
       this.imgshow = !this.imgshow;
-      if (this.imgshow) {
+      if (this.imgshow && !this.isMobile) {
         const h = this.$createElement;
         this.$notify({
           title: "提示来了~",
           message: h("i", "图片查看有点粗糙，勉强看看，以后再改~"),
           duration: 2000,
         });
+      }
+    },
+    // 打开图片预览
+    imgView(i) {
+      let imgs = this.imgList.map((e) => {
+        return e.src;
+      });
+      ImagePreview({
+        images: imgs,
+        startPosition: i,
+      });
+    },
+    // navTouchStart
+    navTouchStart(e) {
+      this.navTouch = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+    },
+    navTouchMove(e) {
+      let x = e.touches[0].clientX;
+      if (this.navTouch.x - x > 50) {
+        this.touch = false;
       }
     },
     openGithub() {
@@ -313,11 +397,15 @@ export default {
     if (this.isMobile) {
       setTimeout(() => {
         this.headerCanvas = this.$refs["m-header-canvas"];
+        this.diaryCanvas = this.$refs["m-diary-canvas"];
         this.headerCanvas.width = this.headerCanvas.parentNode.clientWidth * 2;
         this.headerCanvas.height =
           this.headerCanvas.parentNode.clientHeight * 2;
+        this.diaryCanvas.width = this.diaryCanvas.parentNode.clientWidth * 2;
+        this.diaryCanvas.height = this.diaryCanvas.parentNode.clientHeight * 2;
         this.limitX = this.headerCanvas.width;
         this.limitY = this.headerCanvas.height;
+        this.createRipple();
       }, 1000);
     } else {
       this.headerCanvas = this.$refs["header-canvas"];
@@ -348,11 +436,11 @@ export default {
 @import "styles/common.scss";
 @font-face {
   font-family: "muyao";
-  src: url("../assets/font/Muyao-Softbrush.TTF") format("truetype");
+  src: url("../assets/font/compress/Muyao-Softbrush.TTF") format("truetype");
 }
 @font-face {
   font-family: "fzlt";
-  src: url("../assets/font/FZZJ-XHLTJW.TTF") format("truetype");
+  src: url("../assets/font/compress/FZZJ-XHLTJW.TTF") format("truetype");
 }
 @mixin lightFontBlue($color) {
   color: $color;
@@ -564,7 +652,7 @@ export default {
   align-items: center;
   padding: 0 px2rem(50px);
   @include lightFontBlue(#fff);
-  animation: tipsHidden 1s ease 6s forwards;
+  animation: tipsHidden 1s ease 9s forwards;
 }
 @keyframes tipsHidden {
   0% {
@@ -579,7 +667,7 @@ export default {
 }
 .header-mobile {
   position: absolute;
-  height: 100vh;
+  height: 100%;
   z-index: 100;
   .m-head {
     overflow: hidden;
@@ -598,7 +686,7 @@ export default {
   }
   .m-nav {
     position: absolute;
-    height: 100vh;
+    height: 100%;
     top: 0;
     left: -100vw;
     width: 100vw;
@@ -672,6 +760,17 @@ export default {
           overflow-y: scroll;
           align-items: flex-start;
           transition: all 0.5s;
+          padding-top: px2rem(50px);
+          .diary-title {
+            top: px2rem(10px);
+            left: 0;
+            font-size: px2rem(20px);
+            font-family: "muyao";
+            @include lightFontBlue(#fff);
+            height: px2rem(30px);
+            position: absolute;
+            width: 100%;
+          }
           &::-webkit-scrollbar {
             /*滚动条整体样式*/
             width: 4px; /*高宽分别对应横竖滚动条的尺寸*/
@@ -708,7 +807,14 @@ export default {
           font-family: "fzlt";
           margin: 2vh 2.5vw;
           position: relative;
+          .m-diary-canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 0;
+          }
           .m-note {
+            z-index: 1;
             position: relative;
             text-align: justify;
             text-align-last: left;
@@ -757,6 +863,13 @@ export default {
     .m-nav-blank {
       width: 25vw;
       height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      span {
+        font-size: 32px;
+        @include lightFontBlue(#fff);
+      }
     }
   }
 }

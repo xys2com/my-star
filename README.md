@@ -19,49 +19,49 @@
 
 ###### 执行
 
-!['执行'](./public/assets/README/01.jpg)
+!['执行'](https://music-960422.oss-cn-beijing.aliyuncs.com/readme/01.jpg)
 
 ###### 动画项管理
 
-!['管理'](./public/assets/README/02.jpg)
+!['管理'](https://music-960422.oss-cn-beijing.aliyuncs.com/readme/02.jpg)
 
 ###### 监听，自动开始结束动画
 
-!['自动开始/结束'](./public/assets/README/03.jpg)
+!['自动开始/结束'](https://music-960422.oss-cn-beijing.aliyuncs.com/readme/03.jpg)
 
 ###### 例：星星背景动画，子组件动画方法及参数提交到父组件
 
-!['自动开始/结束'](./public/assets/README/04.jpg)
+!['自动开始/结束'](https://music-960422.oss-cn-beijing.aliyuncs.com/readme/04.jpg)
 
 ###### 移动类型的星星构造函数
 
-!['构造函数'](./public/assets/README/05.jpg)
+!['构造函数'](https://music-960422.oss-cn-beijing.aliyuncs.com/readme/05.jpg)
 
 #### 4、动画类型模块化
 
 ###### 各个动画类
 
-!['各个动画类'](./public/assets/README/06.jpg)
+!['各个动画类'](https://music-960422.oss-cn-beijing.aliyuncs.com/readme/06.jpg)
 
 ###### 封装 AudioContext 基础方法实现音频播放器
 
-!['音频播放器'](./public/assets/README/07.jpg)
+!['音频播放器'](https://music-960422.oss-cn-beijing.aliyuncs.com/readme/07.jpg)
 
 ###### 封装 音频可视化动画三种动画
 
-!['音频可视化'](./public/assets/README/08.jpg)
+!['音频可视化'](https://music-960422.oss-cn-beijing.aliyuncs.com/readme/08.jpg)
 
 ###### 封装 让图片水波化的动画
 
-!['水波动画'](./public/assets/README/09.jpg)
+!['水波动画'](https://music-960422.oss-cn-beijing.aliyuncs.com/readme/09.jpg)
 
 ###### 封装 三种星星函数 （流星可做性能优化，已想到，未优化）
 
-!['星星'](./public/assets/README/10.jpg)
+!['星星'](https://music-960422.oss-cn-beijing.aliyuncs.com/readme/10.jpg)
 
 ###### 封装 萤火虫动画函数 （移动端萤火虫路径可做动画优化，待尝试）
 
-!['星星'](./public/assets/README/11.jpg)
+!['星星'](https://music-960422.oss-cn-beijing.aliyuncs.com/readme/11.jpg)
 
 ## Project setup
 

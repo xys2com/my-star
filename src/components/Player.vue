@@ -97,9 +97,16 @@
         <div class="play-infos">
           <div class="msc-infos">
             <p class="m-tit">
-              {{ this.checkedMusic && this.checkedMusic.name }}
+              {{ checkedMusic && checkedMusic.name }}
             </p>
-            <p class="m-atr">作者: 无</p>
+            <p class="m-atr">
+              <span v-if="checkedMusic"
+                >作者：{{ checkedMusic && checkedMusic.author }}</span
+              >
+              <el-button v-else size="mini" type="primary" @click="openFile"
+                >上传音乐</el-button
+              >
+            </p>
           </div>
           <div class="pgs">
             <div class="all-time">
@@ -127,7 +134,7 @@
   </div>
 </template>
 <script>
-import { musicList, custom } from "@/utils/api";
+import { onepiecemusic, customByChain } from "@/utils/api";
 import { Sound } from "@/utils/sound";
 import { random, mobileTypeJudge } from "@/utils/tool";
 import { FrequencySpectrum } from "@/utils/music-view-anm";
@@ -232,6 +239,7 @@ export default {
     hidMain() {
       this.hidden = true;
     },
+    openFile() {},
     // 暂停启动
     alterStatus() {
       if (this.mloading) {
@@ -456,7 +464,7 @@ export default {
     },
     // 获得音乐列表
     async getMusicList() {
-      const res = await musicList();
+      const res = await onepiecemusic();
       if (res.success) {
         this.list = res.data;
         this.checkedMusic = this.list[random(0, this.list.length - 1)];
@@ -473,8 +481,10 @@ export default {
         window.clearInterval(this.setMusicPgsTimer);
         this.setMusicPgsTimer = null;
       }
-      const url = `/videos/${this.checkedMusic.id}.${this.checkedMusic.type}`;
-      const res = await custom(url);
+      // const url = `/videos/${this.checkedMusic.id}.${this.checkedMusic.type}`;
+      const url = `/${this.checkedMusic._url}.${this.checkedMusic.type}`;
+      const res = await customByChain(url);
+      // const res = await musiclinks({ id: this.checkedMusic.id });
       if (res.status === 200) {
         this.sound.init();
         this.sound.analysisBufferPlay(
@@ -495,6 +505,7 @@ export default {
         }
         this.playingMusicId = this.checkedMusic.id;
       } else {
+        this.mloading = false;
         this.$message.error(res.message || "接口错误");
       }
     },

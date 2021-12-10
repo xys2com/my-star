@@ -90,6 +90,14 @@ module.exports = {
           "^/api": "/",
         },
       },
+      "/oss": {
+        target: "https://music-960422.oss-cn-beijing.aliyuncs.com",
+        ws: true,
+        changeOrigin: true,
+        pathRewrite: {
+          "^/oss": "/",
+        },
+      },
     },
   },
   // 是否为 Babel 或 TypeScript 使用 thread-loader
