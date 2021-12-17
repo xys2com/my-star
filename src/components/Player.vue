@@ -103,9 +103,9 @@
               <span v-if="checkedMusic"
                 >作者：{{ checkedMusic && checkedMusic.author }}</span
               >
-              <el-button v-else size="mini" type="primary" @click="openFile"
+              <!-- <el-button v-else size="mini" type="primary" @click="openFile"
                 >上传音乐</el-button
-              >
+              > -->
             </p>
           </div>
           <div class="pgs">
@@ -141,7 +141,7 @@ import { FrequencySpectrum } from "@/utils/music-view-anm";
 import { mapGetters } from "vuex";
 import html2canvas from "html2canvas";
 export default {
-  name: "App",
+  name: "Player",
   computed: {
     ...mapGetters(["backgroundTopColor", "backgroundBottomColor"]),
   },
@@ -227,6 +227,8 @@ export default {
       anmId: Math.random().toString(32).slice(-8),
       // 是否移动端
       isMobile: false,
+      // 是否苹果端
+      isIOS: false,
       // 自动播放
       autoPlay: false,
       // 可视化对象
@@ -468,6 +470,7 @@ export default {
       if (res.success) {
         this.list = res.data;
         this.checkedMusic = this.list[random(0, this.list.length - 1)];
+        // if (!this.isIOS) this.getMusicFileStream();
         this.getMusicFileStream();
         if (this.autoPlay) this.alterStatus();
       } else {
@@ -497,6 +500,14 @@ export default {
           },
           () => {
             // 播放完成后的回调
+          },
+          this.isIOS,
+          () => {
+            // 苹果端才有的回调
+            if (this.isIOS) {
+              this.calcSchedule();
+              this.setAnm();
+            }
           }
         );
         this.sound.setVolume(this.volume / 100);
@@ -641,6 +652,8 @@ export default {
     this.getMusicList();
     // 是否移动端
     this.isMobile = mobileTypeJudge().isMobile;
+    // 是否ios
+    this.isIOS = mobileTypeJudge().isIOS;
     if (this.isMobile) {
       this.playerConfig = {
         width: document.body.clientWidth,
@@ -657,6 +670,7 @@ export default {
     window.clearInterval(this.setMusicPgsTimer);
     window.clearTimeout(this.canvasDataUpdateTimer);
     this.dragend();
+    this.$emit("removeAnm", this.anmId);
   },
 };
 </script>
@@ -1292,6 +1306,13 @@ export default {
         }
       }
     }
+  }
+}
+</style>
+<style>
+@media screen and (max-width: 750px) {
+  .square-player canvas {
+    transform: scale(0.5, 0.5) translate(-50%, -50%) !important;
   }
 }
 </style>

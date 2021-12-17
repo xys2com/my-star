@@ -3,8 +3,8 @@
     id="app"
     :style="`background: linear-gradient(to bottom, ${backgroundTopColor}, ${backgroundBottomColor})`"
   >
-    <Header @callBrotherEvent="childFn" v-if="!isOther" />
-    <router-view ref="child" />
+    <Header @callBrotherEvent="childFn" v-if="!isOther" ref="header" />
+    <router-view ref="child" @getPath="sendPath" />
   </div>
 </template>
 <script>
@@ -29,6 +29,9 @@ export default {
     childFn(datum) {
       const { name, params: option } = datum;
       this.$refs.child[name] && this.$refs.child[name](option);
+    },
+    sendPath(path) {
+      this.$refs.header.setIndexByPath(path);
     },
   },
 };

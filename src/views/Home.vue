@@ -22,7 +22,7 @@ import { mobileTypeJudge } from "@/utils/tool";
 import Player from "@/components/Player.vue";
 import StarrySky from "@/components/StarrySky.vue";
 export default {
-  name: "App",
+  name: "Home",
   components: {
     Player,
     StarrySky,

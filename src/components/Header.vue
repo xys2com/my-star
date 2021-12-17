@@ -57,6 +57,7 @@
               class="m-nav-item"
               :class="['item', active === i ? 'active' : '']"
               v-for="(item, i) in navlist"
+              :show="false"
               :ref="`item-${i}`"
               :key="i"
               @touchstart="navclick($event, item, i)"
@@ -108,7 +109,7 @@ import { random } from "@/utils/tool";
 
 import { ImagePreview } from "vant";
 export default {
-  name: "App",
+  name: "Header",
   data() {
     return {
       isMobile: false,
@@ -136,9 +137,18 @@ export default {
           title: "来看看猪的白日梦~",
           event: "openDiary",
           hasPage: false,
-          note: "我梦见我变成了猪，今后一边怀恋当猪的好，一边想着做人的妙。比较可笑",
+          note: "我梦见我变成了猪，今后一边怀恋当猪的好，一边想着做人的妙，比较可笑。",
           subtitle:
             "猪不会上班，猪不会写字，猪的一生只有一小年，可猪的所有痛苦也只有那最后那一刀。 —— 谁才是猪",
+        },
+        {
+          name: "动画",
+          title: "哟呵~",
+          hasPage: true,
+          url: "/other",
+          note: "人的厚度来源于时间，人的宽度来源见识，希望我是、或者成为一个厚而重的人。",
+          subtitle:
+            "可是有人生来便拥有了财富，从而有了时间，而后有了见识。 —— 天赋异禀",
         },
       ],
       active: 0,
@@ -192,45 +202,36 @@ export default {
         this.setBackPosition(i);
       },
     },
-    // touch: {
-    //   handler(v) {
-    //     if (v && this.isMobile) {
-    //       this.$notify({
-    //         title: "提示来了~",
-    //         message: "图片查看有点粗糙，勉强看看，以后再改~",
-    //         duration: 1500,
-    //       });
-    //     }
-    //   },
-    // },
   },
   methods: {
     navclick(e, item, i) {
       this.active = i;
-      if (i !== this.navlist.length - 1) {
+      if (i !== 2) {
         this.imgshow = false;
       }
-      if (!item.hasPage) {
+      if (item.hasPage) {
+        this.$router.push(item.url);
+      } else {
         if (this.isMobile) {
-          this[item.event]([
-            {
-              x: e.touches[0].clientX,
-              y: e.touches[0].clientY,
-            },
-            this.headerCanvas,
-          ]);
+          this[item.event] &&
+            this[item.event]([
+              {
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY,
+              },
+              this.headerCanvas,
+            ]);
         } else {
-          this[item.event]([
-            {
-              x: e.clientX,
-              y: e.clientY,
-            },
-            this.headerCanvas,
-          ]);
+          this[item.event] &&
+            this[item.event]([
+              {
+                x: e.clientX,
+                y: e.clientY,
+              },
+              this.headerCanvas,
+            ]);
         }
-        return;
       }
-      // this.$router.push(item.url);
     },
     // 设置字体跳动动画
     setBackPosition(i) {
@@ -385,13 +386,26 @@ export default {
     openGithub() {
       window.open("https://github.com/xys2com/my-star");
     },
+    setIndexByPath(path) {
+      this.navlist.map((e, i) => {
+        if (e.url === path) {
+          if (i !== -1) {
+            this.active = i;
+            this.setBackPosition(i);
+          } else {
+            this.active = 0;
+            this.setBackPosition(0);
+          }
+        }
+      });
+    },
   },
   updated() {},
   mounted() {
-    const { active: i, setBackPosition } = this;
-    setTimeout(() => {
-      setBackPosition(i);
-    }, 1000);
+    // const { active: i, setBackPosition } = this;
+    // setTimeout(() => {
+    //   setBackPosition(i);
+    // }, 1000);
     this.isMobile = mobileTypeJudge().isMobile;
 
     if (this.isMobile) {
@@ -707,6 +721,7 @@ export default {
         left: 0;
         top: 0;
         z-index: 0;
+        transform: scale(0.5, 0.5) translate(-50%, -50%) !important;
       }
       .m-nav-list {
         z-index: 2;
@@ -714,7 +729,7 @@ export default {
         margin: 0 auto;
         height: px2rem(40px);
         border-bottom: 1px solid #426ab3;
-        font-size: px2rem(20px);
+        font-size: px2rem(16.5px);
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -812,6 +827,7 @@ export default {
             left: 0;
             top: 0;
             z-index: 0;
+            transform: scale(0.5, 0.5) translate(-50%, -50%) !important;
           }
           .m-note {
             z-index: 1;
@@ -871,6 +887,13 @@ export default {
         @include lightFontBlue(#fff);
       }
     }
+  }
+}
+</style>
+<style>
+@media screen and (max-width: 750px) {
+  .header-wrap canvas {
+    transform: scale(0.5, 0.5) translate(-50%, -50%) !important;
   }
 }
 </style>

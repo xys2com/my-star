@@ -81,7 +81,7 @@
 </template>
 <script>
 export default {
-  name: "App",
+  name: "Menus",
   data() {
     return {
       checkM1: null,

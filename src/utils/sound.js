@@ -42,7 +42,9 @@ function Sound() {
     arraybuffer,
     firstPlay,
     allReadyCallback,
-    callback
+    callback,
+    isIOS,
+    IOSCallback
   ) => {
     var n = ++this.count;
     this.source && this.source[this.source.stop ? "stop" : "noteOff"]();
@@ -58,7 +60,9 @@ function Sound() {
         this.source = bufferSource;
         this.duration = bufferSource.buffer.duration; // s
         this.callback = callback;
-
+        if (isIOS && typeof IOSCallback === "function") {
+          IOSCallback();
+        }
         if (
           typeof allReadyCallback === "function" &&
           this.AC.state === "running"

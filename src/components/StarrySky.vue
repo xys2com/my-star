@@ -324,7 +324,7 @@ export default {
   }
 }
 @media screen and (max-width: 750px) {
-  canvas {
+  .canvas-wrap canvas {
     transform: scale(0.5, 0.5) translate(-50%, -50%) !important;
   }
 }
