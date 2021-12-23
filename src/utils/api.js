@@ -12,14 +12,23 @@ export async function demoGet(param) {
 export async function musicList(param) {
   return await get(`${prefix}/musicList`, param);
 }
-
+// 音乐列表
 export async function onepiecemusic(param) {
-  return await get(`${prefix}/onepiecemusics`, param);
+  // return await get(`${prefix}/onepiecemusics`, param);
+  return await get(`${prefix}/getMusicList`, param);
+}
+export async function musiclist(param) {
+  return await get(`${prefix}/musiclist`, param);
 }
 export async function musiclinks(param) {
   return await get(`${prefix}/musiclinks`, param);
 }
-
+export async function visitCount(param) {
+  return await post(`${prefix}/visitCount`, param);
+}
+export async function getVisits(param) {
+  return await get(`${prefix}/getVisits`, param);
+}
 export async function musicDetail(param) {
   return await get(`${prefix}/musicDetail`, param);
 }

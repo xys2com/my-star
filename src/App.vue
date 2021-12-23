@@ -10,6 +10,7 @@
 <script>
 import Header from "@/components/Header";
 import { mapGetters } from "vuex";
+import { visitCount } from "@/utils/api";
 export default {
   data() {
     return {
@@ -33,6 +34,53 @@ export default {
     sendPath(path) {
       this.$refs.header.setIndexByPath(path);
     },
+    loadJS(url, callback) {
+      var script = document.createElement("script"),
+        fn = callback || function () {};
+      script.type = "text/javascript";
+      //IE
+      if (script.readyState) {
+        script.onreadystatechange = function () {
+          if (
+            script.readyState == "loaded" ||
+            script.readyState == "complete"
+          ) {
+            script.onreadystatechange = null;
+
+            fn();
+          }
+        };
+      } else {
+        //其他浏览器
+        script.onload = function () {
+          fn();
+        };
+      }
+      script.src = url;
+      document.getElementsByTagName("head")[0].appendChild(script);
+    },
+    formatt(time) {
+      let Y = time.getFullYear(),
+        M = this.fnBCD(time.getMonth() + 1),
+        D = this.fnBCD(time.getDate()),
+        d = this.fnBCD(time.getHours()),
+        m = this.fnBCD(time.getMinutes()),
+        s = this.fnBCD(time.getSeconds());
+      return `${Y}-${M}-${D} ${d}:${m}:${s}`;
+    },
+    fnBCD(n) {
+      return n < 10 ? `0${n}` : n;
+    },
+  },
+  mounted() {
+    // 访问统计
+    let url = "http://pv.sohu.com/cityjson";
+    this.loadJS(url, () => {
+      // eslint-disable-next-line
+      let ip = returnCitySN.cip;
+      let time = this.formatt(new Date());
+      visitCount({ ip, time });
+    });
   },
 };
 </script>

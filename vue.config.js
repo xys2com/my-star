@@ -83,7 +83,8 @@ module.exports = {
 
     proxy: {
       "/api": {
-        target: "http://www.404notfun.fun",
+        // target: "http://www.404notfun.fun",
+        target: "http://localhost:10086",
         ws: true,
         changeOrigin: true,
         pathRewrite: {

@@ -2,6 +2,9 @@
   <div>
     <div class="header-wrap" v-if="!isMobile">
       <canvas class="header-canvas" ref="header-canvas"></canvas>
+      <div class="statistics">
+        {{ `Today:${today} Total:${total}` }}
+      </div>
       <div class="header-left">
         <div class="active-nav-back" :style="`left:${backLightLeft}px`"></div>
         <div
@@ -89,7 +92,9 @@
                 v-if="checkItem && isMobile"
                 v-html="checkItem.subtitle"
               ></div>
-              <div class="m-other"></div>
+              <div class="m-other">
+                {{ `Today:${today}  Total:${total}` }}
+              </div>
             </div>
           </div>
         </div>
@@ -105,6 +110,7 @@
 import { mobileTypeJudge } from "@/utils/tool";
 import { Firefly } from "@/utils/firefly";
 import { Ripple } from "@/utils/ripple";
+import { getVisits } from "@/utils/api";
 import { random } from "@/utils/tool";
 
 import { ImagePreview } from "vant";
@@ -152,6 +158,8 @@ export default {
         },
       ],
       active: 0,
+      today: 0,
+      total: 0,
       backLightLeft: 0,
       checkItem: null,
       fireflylist: [],
@@ -399,6 +407,13 @@ export default {
         }
       });
     },
+    // 获取访问量
+    async getVisits() {
+      let res = await getVisits({ type: 0 });
+      this.today = res.data;
+      res = await getVisits();
+      this.total = res.data;
+    },
   },
   updated() {},
   mounted() {
@@ -407,6 +422,7 @@ export default {
     //   setBackPosition(i);
     // }, 1000);
     this.isMobile = mobileTypeJudge().isMobile;
+    this.getVisits();
 
     if (this.isMobile) {
       setTimeout(() => {
@@ -504,6 +520,17 @@ export default {
   display: flex;
   align-items: center;
   padding: 0 50px;
+  .statistics {
+    position: absolute;
+    height: 30px;
+    font-size: 12px;
+    bottom: -30px;
+    left: 0;
+    text-align: center;
+    line-height: 30px;
+    @include lightFontBlue(#fff);
+    transform: scale(0.8);
+  }
   .header-canvas {
     position: absolute;
     left: 0;
@@ -864,14 +891,12 @@ export default {
             position: absolute;
             bottom: 0;
             width: 100%;
-            height: px2rem(50px);
+            height: px2rem(30px);
             display: flex;
             justify-content: space-around;
             align-items: center;
-            span {
-              font-size: 32px;
-              @include lightFontBlue(#fff);
-            }
+            @include lightFontBlue(#fff);
+            font-size: px2rem(16px);
           }
         }
       }

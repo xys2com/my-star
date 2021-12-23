@@ -35,7 +35,6 @@ export default {
         x: e.clientX,
         y: e.clientY,
       };
-      console.log(pos);
     },
   },
   mounted() {},

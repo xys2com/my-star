@@ -42,6 +42,11 @@ const routes = [
     name: "other",
     component: () => import("@/views/Other.vue"),
   },
+  {
+    path: "/statistics",
+    name: "statistics",
+    component: () => import("@/views/Statistics.vue"),
+  },
 ];
 
 const router = new VueRouter({

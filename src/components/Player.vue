@@ -671,6 +671,7 @@ export default {
     window.clearTimeout(this.canvasDataUpdateTimer);
     this.dragend();
     this.$emit("removeAnm", this.anmId);
+    this.sound.stop();
   },
 };
 </script>

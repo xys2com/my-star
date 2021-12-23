@@ -39,7 +39,6 @@ export default {
       this.segment.push(el);
     },
     redraw() {
-      console.log(this.redraw);
       this.clear();
       this.segment.forEach((e) => {
         e.draw();
