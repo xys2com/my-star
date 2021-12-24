@@ -92,13 +92,14 @@
                 v-if="checkItem && isMobile"
                 v-html="checkItem.subtitle"
               ></div>
-              <div class="m-other">
-                {{ `Today:${today}  Total:${total}` }}
-              </div>
             </div>
           </div>
         </div>
         <div class="m-nav-blank" @click="touch = false">
+          <div class="m-other">
+            <div>Today: {{ today }}</div>
+            <div>Total: {{ total }}</div>
+          </div>
           <span class="iconfont icon-github" @click.stop="openGithub"></span>
         </div>
       </div>
@@ -124,7 +125,7 @@ export default {
         {
           name: "星月海",
           title: "星星啊，月亮啊，水啊",
-          url: "/",
+          url: "/home",
           hasPage: true,
           note: "光年之外，璀璨零光不可触及；桂光倒悬，此番人间共饮一轮",
           subtitle: "我比他们更明亮，只因我的心离你更近而已。 —— 你好",
@@ -244,12 +245,12 @@ export default {
     // 设置字体跳动动画
     setBackPosition(i) {
       const note = this.navlist[i].note.split("").map((e, i) => {
-        return `<span class='js-to-text-anm-${i}' style="animation-delay:${(
-          i * 0.1
-        ).toFixed(1)}s">${e}</span>`;
+        return `<span style="animation-delay:${(i * 0.1).toFixed(
+          1
+        )}s">${e}</span>`;
       });
       const subtitle = this.navlist[i].subtitle.split("").map((e, i) => {
-        return `<span class='js-to-text-anm-${i}' style="animation-delay:${(
+        return `<span style="animation-delay:${(
           i * 0.05 +
           note.length * 0.1
         ).toFixed(2)}s">${e}</span>`;
@@ -417,6 +418,8 @@ export default {
   },
   updated() {},
   mounted() {
+    this.setBackPosition(0);
+    // console.log(this.$route.path);
     // const { active: i, setBackPosition } = this;
     // setTimeout(() => {
     //   setBackPosition(i);
@@ -450,7 +453,7 @@ export default {
         const h = this.$createElement;
         this.$notify({
           title: "提示来了~",
-          message: h("i", "没做响应式别看了~只做了移动端初始兼容。"),
+          message: h("i", "没做响应式~只做了移动端初始渲染兼容。"),
           duration: 5000,
         });
         this.tips = true;
@@ -520,6 +523,7 @@ export default {
   display: flex;
   align-items: center;
   padding: 0 50px;
+  min-width: 1600px;
   .statistics {
     position: absolute;
     height: 30px;
@@ -542,6 +546,7 @@ export default {
     position: relative;
     width: 50%;
     display: flex;
+    min-width: 640px;
     .active-nav-back {
       position: absolute;
       height: 80px;
@@ -756,7 +761,7 @@ export default {
         margin: 0 auto;
         height: px2rem(40px);
         border-bottom: 1px solid #426ab3;
-        font-size: px2rem(16.5px);
+        font-size: px2rem(16px);
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -887,21 +892,23 @@ export default {
               animation-fill-mode: forwards;
             }
           }
-          .m-other {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: px2rem(30px);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            @include lightFontBlue(#fff);
-            font-size: px2rem(16px);
-          }
         }
       }
     }
     .m-nav-blank {
+      position: relative;
+      .m-other {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        @include lightFontBlue(#fff);
+        height: 12px;
+        line-height: 12px;
+        div {
+          font-size: px2rem(12px);
+          margin-bottom: 5px;
+        }
+      }
       width: 25vw;
       height: 100%;
       display: flex;

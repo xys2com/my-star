@@ -369,8 +369,8 @@ export default {
     border-right: 1px solid rgb(86, 3, 241);
   }
   .gif-list {
-    width: 1440px; // 默认宽度
-    margin: 20px auto; // 剧中
+    width: 1440px;
+    margin: 20px auto;
     columns: 4;
     column-gap: 30px;
     .gif-item {
